@@ -21,6 +21,8 @@ OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3")
 
 MOTOR_ECO_MODELO = "eco-reglas-v1"
 
+CATEGORIAS_VALIDAS_OLLAMA = ["feat", "fix", "docs", "test", "chore", "refactor"]
+
 # Orden de evaluacion = orden de prioridad cuando el texto coincide con varias reglas.
 REGLAS_CLASIFICACION: list[tuple[str, re.Pattern]] = [
     ("fix", re.compile(r"fix|corrig|arregl|error|bug|falla", re.IGNORECASE)),
@@ -66,11 +68,25 @@ def ejecutar_motor_eco(texto: str) -> tuple[str, str]:
     return MOTOR_ECO_MODELO, clasificar_por_reglas(texto)
 
 
+PROMPT_CLASIFICACION_OLLAMA = (
+    "Clasifica el siguiente mensaje de commit en UNA de estas categorias: "
+    "feat, fix, docs, test, chore, refactor. Responde unicamente con la "
+    "palabra de la categoria, sin explicaciones.\n"
+    "Mensaje: {texto}\n"
+    "Categoria:"
+)
+
+
 def ejecutar_motor_ollama(texto: str) -> tuple[str, str]:
     try:
         resp = requests.post(
             OLLAMA_URL,
-            json={"model": OLLAMA_MODEL, "prompt": texto, "stream": False},
+            json={
+                "model": OLLAMA_MODEL,
+                "prompt": PROMPT_CLASIFICACION_OLLAMA.format(texto=texto),
+                "stream": False,
+                "options": {"num_ctx": 2048, "num_predict": 8, "temperature": 0},
+            },
             timeout=60,
         )
         resp.raise_for_status()
@@ -78,7 +94,12 @@ def ejecutar_motor_ollama(texto: str) -> tuple[str, str]:
         raise HTTPException(
             status_code=502, detail=f"Error consultando Ollama: {exc}"
         ) from exc
-    return OLLAMA_MODEL, resp.json().get("response", "")
+
+    respuesta_cruda = resp.json().get("response", "").lower().strip()
+    for categoria in CATEGORIAS_VALIDAS_OLLAMA:
+        if categoria in respuesta_cruda:
+            return OLLAMA_MODEL, categoria
+    return OLLAMA_MODEL, "desconocido"
 
 
 @app.get("/health")
