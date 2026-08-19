@@ -25,6 +25,13 @@ Cada clasificación queda registrada en PostgreSQL con su motor, modelo, entrada
 
 Todos los comandos están en PowerShell (Windows). Si usas Linux/Mac, ajusta la sintaxis de variables de entorno según corresponda.
 
+**Alternativa automatizada (Git Bash / WSL / Linux):** el repositorio incluye `setup.sh` (verifica Docker/Ollama, crea `.env` si falta, y levanta el stack) y `diagnostico.sh` (reporta versiones instaladas y estado de los servicios). Estos son scripts `bash`, pensados para correr desde **Git Bash o WSL en Windows**, o directamente en Linux/Mac — no funcionan en PowerShell puro. Si trabajas solo con PowerShell, los pasos equivalentes están documentados manualmente a continuación.
+
+```bash
+./setup.sh        # aprovisiona y levanta el stack
+./diagnostico.sh  # reporta el estado del entorno
+```
+
 ### 1. Clonar el repositorio
 
 ```powershell
