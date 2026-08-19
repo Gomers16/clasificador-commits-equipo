@@ -189,6 +189,12 @@ $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";"
 **Causa:** Docker Desktop no está abierto, o el motor (backend WSL2) no terminó de inicializar.
 **Solución:** abrir Docker Desktop manualmente desde el menú de Inicio y esperar a que el ícono de la ballena en la bandeja del sistema deje de animarse (o que la app muestre "Engine running") antes de reintentar el comando.
 
+### 6. La API falla con error de autenticación contra PostgreSQL después de completar .env
+
+**Síntoma:** `docker compose up -d --build` levanta los contenedores sin error, pero `POST /clasificar` responde `500 Internal Server Error`, y los logs de la API (`docker compose logs api`) muestran un error de autenticación o conexión hacia Postgres.
+**Causa:** se reemplazó `DB_PASSWORD` en `.env` por un valor distinto de `app_ia_password`, pensando que era un placeholder de ejemplo como los demás. Pero ese valor es fijo — coincide con la contraseña del rol `app_ia` definida literalmente en `db/init.sql` (`CREATE ROLE app_ia WITH LOGIN PASSWORD 'app_ia_password'`). Si no coinciden, la autenticación falla.
+**Solución:** deja `DB_PASSWORD`, `DB_HOST`, `DB_PORT`, `DB_NAME` y `DB_USER` exactamente como vienen en `.env.example` — solo `POSTGRES_PASSWORD` (superusuario) y `OLLAMA_MODEL` son de libre elección.
+
 ## Video de demostración
 
 *— pendiente de grabar —*
