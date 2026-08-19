@@ -36,10 +36,19 @@ cd clasificador-commits-equipo
 
 ```powershell
 Copy-Item .env.example .env
-notepad .env
 ```
 
-Completa los valores reales (contraseñas de base de datos, etc.) — `.env.example` trae placeholders que debes reemplazar. **Nunca subas tu `.env` real a git** (ya está en `.gitignore`).
+Abre `.env` y ajusta SOLO estos dos valores según tu preferencia (son de libre elección, no afectan la coherencia del sistema):
+
+- `POSTGRES_PASSWORD` — contraseña del superusuario de Postgres, puedes poner cualquier valor.
+- `OLLAMA_MODEL` — solo si vas a usar el motor ollama, ajústalo al modelo que descargues.
+
+**Deja el resto de las variables EXACTAMENTE como están en el archivo, sin cambiarlas:**
+
+- `DB_PASSWORD=app_ia_password` — este valor NO es un placeholder, es la contraseña real del rol `app_ia`, ya definida de forma fija en `db/init.sql` (`CREATE ROLE app_ia WITH LOGIN PASSWORD 'app_ia_password'`). Si la cambias en `.env` sin cambiarla también en `db/init.sql`, la API no podrá autenticarse contra la base de datos.
+- `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER` — coinciden con nombres fijos definidos en `docker-compose.yml` y `db/init.sql`; no deben modificarse en un despliegue local estándar.
+
+**Nunca subas tu `.env` real a git** (ya está en `.gitignore`).
 
 ### 3. Levantar el stack completo
 
